@@ -46,6 +46,11 @@ app.post("/users", async (req, res) => {
   res.json(createdUser);
 });
 
+app.get("/users", async (req, res) => {
+  const users = await User.find({});
+  res.json(users);
+});
+
 app.listen(PORT, () => {
   console.log("listening on port " + PORT);
 });
