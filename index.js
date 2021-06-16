@@ -1,6 +1,10 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 const PORT = process.env.PORT;
+
+const User = require("./models/user");
+
 const app = express();
 
 app.use(express.json());
@@ -19,6 +23,27 @@ db.once("open", function () {
 
 app.get("/", (req, res) => {
   res.json({ info: "app works" });
+});
+
+app.post("/users", async (req, res) => {
+  const body = req.body;
+  console.log(body);
+
+  if (!(body.username && body.password)) {
+    res.status(400).json({ error: "Missing password or username" });
+  }
+
+  const saltRounds = 10;
+  const passwordHash = await bcrypt.hash(body.password, saltRounds);
+
+  const user = new User({
+    username: body.username,
+    passwordHash: passwordHash,
+  });
+
+  const createdUser = await user.save();
+
+  res.json(createdUser);
 });
 
 app.listen(PORT, () => {
