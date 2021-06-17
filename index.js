@@ -2,7 +2,6 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
-
 require("dotenv").config();
 const PORT = process.env.PORT;
 
@@ -30,30 +29,37 @@ app.get("/", (req, res) => {
 });
 
 app.post("/users", async (req, res) => {
-  const body = req.body;
-  console.log(body);
+  try {
+    const body = req.body;
 
-  if (!(body.username && body.password)) {
-    res.status(400).json({ error: "Missing password or username" });
+    if (!(body.username && body.password)) {
+      res.status(400).json({ error: "Missing password or username" });
+    }
+
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(body.password, saltRounds);
+
+    const user = new User({
+      username: body.username,
+      passwordHash: passwordHash,
+    });
+
+    const createdUser = await user.save();
+
+    res.json(createdUser);
+  } catch (error) {
+    res.status(400).json({ error: error });
   }
-
-  const saltRounds = 10;
-  const passwordHash = await bcrypt.hash(body.password, saltRounds);
-
-  const user = new User({
-    username: body.username,
-    passwordHash: passwordHash,
-  });
-
-  const createdUser = await user.save();
-
-  res.json(createdUser);
 });
 
 app.delete("/users/:id", async (req, res) => {
-  const response = await User.findByIdAndDelete(req.params.id);
+  try {
+    const response = await User.findByIdAndDelete(req.params.id);
 
-  res.status(204).end();
+    res.status(204).end();
+  } catch (error) {
+    res.status(400).json({ error: error });
+  }
 });
 
 app.get("/users", async (req, res) => {
@@ -88,7 +94,7 @@ app.post("/login", async (req, res) => {
 
     res.json({ token: token, user: user.username, id: user.id });
   } catch (error) {
-    console.log(error);
+    res.status(400).json({ error: error });
   }
 });
 
