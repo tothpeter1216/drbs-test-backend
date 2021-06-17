@@ -2,8 +2,14 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const mongoose = require("mongoose");
+
 require("dotenv").config();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3001;
+const mongodbUri = process.env.MONGODB_URI || "mongodb://localhost:27017/test";
+const tokenSecret =
+  process.env.TOKEN_SECRET ||
+  "17851104ceb0f6461c784f7124283dc16c260a6244e99a995f951352137b45972fe3017397235b3573259f886016b722b39f2905664985380662efd140b2eda4";
 
 const User = require("./models/user");
 
@@ -12,8 +18,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const mongoose = require("mongoose");
-mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect(mongodbUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -87,10 +92,7 @@ app.post("/login", async (req, res) => {
         .json({ error: "The username or password is invalid" });
     }
 
-    let token = jwt.sign(
-      { username: user.username, id: user.id },
-      process.env.TOKEN_SECRET
-    );
+    let token = jwt.sign({ username: user.username, id: user.id }, tokenSecret);
 
     res.json({ token: token, user: user.username, id: user.id });
   } catch (error) {
