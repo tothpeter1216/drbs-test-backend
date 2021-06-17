@@ -46,6 +46,12 @@ app.post("/users", async (req, res) => {
   res.json(createdUser);
 });
 
+app.delete("/users/:id", async (req, res) => {
+  const response = await User.findByIdAndDelete(req.params.id);
+
+  res.status(204).end();
+});
+
 app.get("/users", async (req, res) => {
   const users = await User.find({});
   res.json(users);
