@@ -1,5 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+var jwt = require("jsonwebtoken");
+
 require("dotenv").config();
 const PORT = process.env.PORT;
 
@@ -55,6 +57,37 @@ app.delete("/users/:id", async (req, res) => {
 app.get("/users", async (req, res) => {
   const users = await User.find({});
   res.json(users);
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const body = req.body;
+
+    if (!(body.username && body.password)) {
+      return res.status(401).json({ error: "Missing username or password" });
+    }
+
+    const user = await User.findOne({ username: body.username });
+    const checkPassword = await bcrypt.compare(
+      body.password,
+      user.passwordHash
+    );
+
+    if (!(user && checkPassword)) {
+      return res
+        .status(401)
+        .json({ error: "The username or password is invalid" });
+    }
+
+    let token = jwt.sign(
+      { username: user.username, id: user.id },
+      process.env.TOKEN_SECRET
+    );
+
+    res.json({ token: token, user: user.username, id: user.id });
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 app.listen(PORT, () => {
