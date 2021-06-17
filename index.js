@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
-var jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
+const cors = require("cors");
 
 require("dotenv").config();
 const PORT = process.env.PORT;
@@ -10,6 +11,7 @@ const User = require("./models/user");
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 const mongoose = require("mongoose");
 mongoose.connect(process.env.MONGODB_URI, {
